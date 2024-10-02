@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>리듬 게임</title>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #282c34;
+            color: white;
+            font-family: Arial, sans-serif;
+            flex-direction: column;
+        }
+        .game-area {
+            width: 300px;
+            height: 300px;
+            border: 2px solid white;
+            position: relative;
+            overflow: hidden;
+        }
+        .note {
+            position: absolute;
+            width: 50px;
+            height: 50px;
+            background-color: red;
+            left: 50%;
+            transform: translateX(-50%);
+            animation: fall linear forwards;
+        }
+        @keyframes fall {
+            from {
+                top: -50px;
+            }
+            to {
+                top: 300px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>리듬 게임</h1>
+    <div class="game-area" id="gameArea"></div>
+    <p id="score">점수: 0</p>
+    <audio id="hitSound" src="hit-sound.mp3" preload="auto"></audio>
+    <audio id="missSound" src="miss-sound.mp3" preload="auto"></audio>
+    <script>
+        const gameArea = document.getElementById('gameArea');
+        const scoreDisplay = document.getElementById('score');
+        const hitSound = document.getElementById('hitSound');
+        const missSound = document.getElementById('missSound');
+        let score = 0;
+
+        function createNote() {
+            const note = document.createElement('div');
+            note.className = 'note';
+            note.style.left = `${Math.random() * (gameArea.clientWidth - 50)}px`;
+            note.style.animationDuration = '3s';
+            gameArea.appendChild(note);
+
+            note.addEventListener('animationend', () => {
+                note.remove();
+                missSound.play();
+            });
+
+            setTimeout(() => {
+                if (note) {
+                    note.remove();
+                }
+            }, 3000);
+        }
+
+        function checkHit(event) {
+            const notes = document.querySelectorAll('.note');
+            notes.forEach(note => {
+                const noteRect = note.getBoundingClientRect();
+                const keyPressed = event.key;
+
+                if (noteRect.bottom >= gameArea.getBoundingClientRect().bottom - 50 && keyPressed === ' ') {
+                    score++;
+                    note.remove();
+                    hitSound.play();
+                    updateScore();
+                }
+            });
+        }
+
+        function updateScore() {
+            scoreDisplay.textContent = `점수: ${score}`;
+        }
+
+        document.addEventListener('keydown', checkHit);
+        setInterval(createNote, 1000);
+    </script>
+</body>
+</html>
