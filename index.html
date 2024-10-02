@@ -24,7 +24,7 @@
         }
         .note {
             position: absolute;
-            width: 20px;
+            width: 50px;
             height: 50px;
             background-color: red;
             left: 50%;
@@ -47,18 +47,30 @@
     <p id="score">점수: 0</p>
     <audio id="hitSound" src="hit-sound.mp3" preload="auto"></audio>
     <audio id="missSound" src="miss-sound.mp3" preload="auto"></audio>
+    <audio id="bgMusic" src="background-music.mp3" preload="auto" loop></audio> <!-- 배경음 추가 -->
     <script>
         const gameArea = document.getElementById('gameArea');
         const scoreDisplay = document.getElementById('score');
         const hitSound = document.getElementById('hitSound');
         const missSound = document.getElementById('missSound');
+        const bgMusic = document.getElementById('bgMusic'); // 배경음 오디오 요소
         let score = 0;
+
+        const keyMap = {
+            'a': 'note1',
+            's': 'note2',
+            'k': 'note3',
+            'l': 'note4'
+        };
 
         function createNote() {
             const note = document.createElement('div');
             note.className = 'note';
+            const keys = Object.keys(keyMap);
+            const randomKey = keys[Math.floor(Math.random() * keys.length)];
+            note.setAttribute('data-key', randomKey);
             note.style.left = `${Math.random() * (gameArea.clientWidth - 50)}px`;
-            note.style.animationDuration = '1s';
+            note.style.animationDuration = '3s';
             gameArea.appendChild(note);
 
             note.addEventListener('animationend', () => {
@@ -75,15 +87,17 @@
 
         function checkHit(event) {
             const notes = document.querySelectorAll('.note');
+            const keyPressed = event.key.toLowerCase();
+
             notes.forEach(note => {
                 const noteRect = note.getBoundingClientRect();
-                const keyPressed = event.key;
-
-                if (noteRect.bottom >= gameArea.getBoundingClientRect().bottom - 50 && keyPressed === ' ') {
-                    score++;
-                    note.remove();
-                    hitSound.play();
-                    updateScore();
+                if (noteRect.bottom >= gameArea.getBoundingClientRect().bottom - 50 && keyPressed in keyMap) {
+                    if (note.getAttribute('data-key') === keyPressed) {
+                        score++;
+                        note.remove();
+                        hitSound.play();
+                        updateScore();
+                    }
                 }
             });
         }
@@ -94,6 +108,11 @@
 
         document.addEventListener('keydown', checkHit);
         setInterval(createNote, 1000);
+
+        // 게임 시작 시 배경음 재생
+        window.onload = () => {
+            bgMusic.play();
+        };
     </script>
 </body>
 </html>
