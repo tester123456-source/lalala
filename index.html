@@ -24,9 +24,9 @@
         }
         .note {
             position: absolute;
-            width: 50px;
+            width: 20px;
             height: 50px;
-            background-color: red;
+            background-color: lightblue;
             left: 50%;
             transform: translateX(-50%);
             animation: fall linear forwards;
@@ -58,7 +58,7 @@
             const note = document.createElement('div');
             note.className = 'note';
             note.style.left = `${Math.random() * (gameArea.clientWidth - 50)}px`;
-            note.style.animationDuration = '3s';
+            note.style.animationDuration = '1s';
             gameArea.appendChild(note);
 
             note.addEventListener('animationend', () => {
