@@ -16,15 +16,24 @@
             flex-direction: column;
         }
         .game-area {
-            width: 300px;
+            display: flex;
+            width: 400px;
             height: 300px;
             border: 2px solid white;
             position: relative;
             overflow: hidden;
         }
+        .column {
+            flex: 1;
+            border-right: 1px solid white;
+            position: relative;
+        }
+        .column:last-child {
+            border-right: none;
+        }
         .note {
             position: absolute;
-            width: 25px;
+            width: 50px;
             height: 50px;
             background-color: red;
             left: 50%;
@@ -43,35 +52,38 @@
 </head>
 <body>
     <h1>리듬 게임</h1>
-    <div class="game-area" id="gameArea"></div>
+    <div class="game-area" id="gameArea">
+        <div class="column" id="columnA"></div>
+        <div class="column" id="columnS"></div>
+        <div class="column" id="columnK"></div>
+        <div class="column" id="columnL"></div>
+    </div>
     <p id="score">점수: 0</p>
     <audio id="hitSound" src="hit-sound.mp3" preload="auto"></audio>
     <audio id="missSound" src="miss-sound.mp3" preload="auto"></audio>
     <audio id="bgMusic" src="background-music.mp3" preload="auto" loop></audio>
     <script>
-        const gameArea = document.getElementById('gameArea');
+        const columns = {
+            'a': document.getElementById('columnA'),
+            's': document.getElementById('columnS'),
+            'k': document.getElementById('columnK'),
+            'l': document.getElementById('columnL')
+        };
         const scoreDisplay = document.getElementById('score');
         const hitSound = document.getElementById('hitSound');
         const missSound = document.getElementById('missSound');
         const bgMusic = document.getElementById('bgMusic');
         let score = 0;
 
-        const keyMap = {
-            'a': 'note1',
-            's': 'note2',
-            'k': 'note3',
-            'l': 'note4'
-        };
-
         function createNote() {
             const note = document.createElement('div');
             note.className = 'note';
-            const keys = Object.keys(keyMap);
+            const keys = Object.keys(columns);
             const randomKey = keys[Math.floor(Math.random() * keys.length)];
             note.setAttribute('data-key', randomKey);
-            note.style.left = `${Math.random() * (gameArea.clientWidth - 50)}px`;
+            note.style.left = `${(Array.from(keys).indexOf(randomKey) * 100)}%`; // 칸에 맞춰 위치 설정
             note.style.animationDuration = '3s';
-            gameArea.appendChild(note);
+            columns[randomKey].appendChild(note);
 
             note.addEventListener('animationend', () => {
                 note.remove();
@@ -86,33 +98,32 @@
         }
 
         function checkHit(event) {
-            const notes = document.querySelectorAll('.note');
             const keyPressed = event.key.toLowerCase();
+            const note = columns[keyPressed].querySelector('.note');
 
-            notes.forEach(note => {
+            if (note) {
                 const noteRect = note.getBoundingClientRect();
-                if (noteRect.bottom >= gameArea.getBoundingClientRect().bottom - 50 && keyPressed in keyMap) {
-                    if (note.getAttribute('data-key') === keyPressed) {
-                        score++;
-                        note.remove();
-                        hitSound.play();
-                        updateScore();
-                    }
+                if (noteRect.bottom >= note.parentElement.getBoundingClientRect().bottom - 50) {
+                    score++;
+                    note.remove();
+                    hitSound.play();
+                    updateScore();
                 }
-            });
+            }
         }
 
         function updateScore() {
             scoreDisplay.textContent = `점수: ${score}`;
         }
 
-        document.addEventListener('keydown', checkHit);
-        setInterval(createNote, 1000);
+        document.addEventListener('keydown', (event) => {
+            if (bgMusic.paused) {
+                bgMusic.play();
+            }
+            checkHit(event);
+        });
 
-        // 게임 시작 시 배경음 재생
-        window.onload = () => {
-            bgMusic.play();
-        };
+        setInterval(createNote, 1000);
     </script>
 </body>
 </html>
